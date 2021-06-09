@@ -6,7 +6,7 @@ Further updates may include the shipping API for label creation.
 
 ## Installation
 ```js
-box install dpduk-cfml
+box install dpdukcfml
 ```
 
 ## Examples

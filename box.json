@@ -8,7 +8,7 @@
         "URL":"https://github.com/GaryStanton/dpduk-cfml"
     },
     "bugs":"https://github.com/GaryStanton/dpduk-cfml/issues",
-    "slug":"dpduk-cfml",
+    "slug":"dpdukcfml",
     "shortDescription":"This module provides a wrapper for the DPD UK API",
     "type":"modules",
     "keywords":"DPD UK CFML ColdFusion Lucee",
