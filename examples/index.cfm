@@ -1,12 +1,34 @@
 <!doctype html>
 
 <cfscript>
+	setting requesttimeout="600";
+
 	if (StructKeyExists(Form, 'trackingnumber') && Len(Form.trackingnumber)) {
 		DPDTracking = new models.tracking(
 			environment = 'sandbox'
 		);
 
 		track = DPDTracking.track(Form.trackingnumber);
+	}
+
+	if (StructKeyExists(Form, 'fileList')) {
+		DPDEvents = new models.events(
+				sftpUsername 	= ''
+			,	sftpKeyFile 	= ''
+		);
+
+		fileList = DPDEvents.getFileList();
+	}
+
+	if (StructKeyExists(Form, 'fileContents')) {
+		DPDEvents = new models.events(
+				sftpUsername 	= ''
+			,	sftpKeyFile 	= ''
+		);
+
+		fileContents = DPDEvents.processRemoteFiles(
+				removeFromServer 	= false
+		);
 	}
 </cfscript>
 
@@ -26,7 +48,8 @@
 			<div class="row">
 				<div class="col-sm-6">
 					<div class="mr-4">
-						<h2>Track shipment</h2>
+						<h2>Tracking</h2>
+						<p>Provide a tracking number to retrieve details about a consignment.</p>
 						<form method="POST">
 							<div class="input-group">
 								<input type="text" required="true" class="form-control" id="trackingnumber" name="trackingnumber" aria-describedby="trackingnumber" placeholder="Enter a tracking number">
@@ -38,11 +61,36 @@
 						</form>
 					</div>
 				</div>
+
+				<div class="col-sm-6">
+					<div class="mr-4">
+						<h2>Events</h2>
+						<p>Tracking events are stored on the DPD SFTP server. Enter authentication details in the index.cfm file to test the following fuctionality.</p>
+						<form method="POST">
+							<div class="input-group">
+								<div class="">
+									<button type="submit" class="btn btn-primary" type="button" name="fileList">View file list</button>
+									<button type="submit" class="btn btn-primary" type="button" name="fileContents">View file contents</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
 			</div>
 
 			<cfif structKeyExists(Variables, 'track')>
 				<hr />
 				<cfdump var="#track#">
+			</cfif>
+
+			<cfif structKeyExists(Variables, 'fileList')>
+				<hr />
+				<cfdump var="#fileList#">
+			</cfif>
+
+			<cfif structKeyExists(Variables, 'fileContents')>
+				<hr />
+				<cfdump var="#fileContents#">
 			</cfif>
 		</div>
 	</body>

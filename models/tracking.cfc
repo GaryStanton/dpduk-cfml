@@ -88,7 +88,7 @@ component singleton accessors="true" {
         }
 
         if (StructKeyExists(result, 'fileContent') && isXML(result.fileContent)) {
-            return Arguments.returnRawXML ? result.fileContent : new xml2struct().ConvertXmlToStruct(result.fileContent, {});
+            return Arguments.returnRawXML ? result.fileContent : new conversion().ConvertXmlToStruct(result.fileContent, {});
         }
         else {
             return {errors: 'Unable to parse result'};

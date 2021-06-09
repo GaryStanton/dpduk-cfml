@@ -31,6 +31,8 @@ component {
 				'username' : ''
 			,	'password' : ''
 			,	'environment' : 'sandbox'
+			,	'sftpUsername' : ''
+			,	'sftpKeyfile' : ''
 		};
 	}
 
@@ -42,6 +44,14 @@ component {
 					username 	= settings.username
 				,	password 	= settings.password
 				,	environment = settings.environment
+			);
+
+		binder.map( "events@DPDUKCFML" )
+			.to( "#moduleMapping#.models.events" )
+			.asSingleton()
+			.initWith(
+					sftpUsername 	= settings.sftpUsername
+				,	sftpKeyfile 	= settings.sftpKeyfile
 			);
 	}
 
