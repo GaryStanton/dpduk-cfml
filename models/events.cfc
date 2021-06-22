@@ -131,8 +131,7 @@ component singleton accessors="true" {
 		cfftp(
 			action = "remove"
 		,   connection = getConnectionName()
-		,   directory="OUT"
-		,   remoteFile = Arguments.fileName
+		,   item = 'OUT/' & Arguments.fileName
 		,   stoponerror = true
 		);
 
@@ -152,6 +151,21 @@ component singleton accessors="true" {
 
 
 	/**
+	 * Delete a file from the FTP server
+	 */
+	public function deleteFile(
+		required string FileName
+	) {
+		openConnection();
+		Local.result = deleteFileCommand(Arguments.FileName);
+		closeConnection();
+
+		return Local.result;
+	}
+
+
+
+	/**
 	 * Filter a file list query object by name and/or date
 	 *
 	 * @fileNames 			Optionally provide a specific filename or list of filenames
@@ -163,9 +177,13 @@ component singleton accessors="true" {
 			query fileList
 		,	string fileNames
 		,	string dateRange
+		,	numeric maxFiles = 0
 	) {
 		
 		var fileList = StructKeyExists(Arguments, 'fileList') ? Arguments.fileList : getFileList();
+
+		// If we're looking at a local file list, we'll have 'dateLastModified' instead of 'lastModified'
+		Local.modifiedColumnName = StructKeyExists(fileList, 'dateLastModified') ? 'dateLastModified' : 'lastModified';
 
 		// Filter query
 		Local.SQL = "
@@ -186,7 +204,7 @@ component singleton accessors="true" {
 
 		if (structKeyExists(Arguments, 'dateRange')) {
 			Local.SQL &= "
-				AND 	LastModified >= :DateFrom
+				AND 	#Local.modifiedColumnName# >= :DateFrom
 			";
 
 			Local.Params.DateFrom = {value = DateFormat(ListFirst(Arguments.dateRange), 'yyyy-mm-dd')};
@@ -194,13 +212,13 @@ component singleton accessors="true" {
 
 		if (structKeyExists(Arguments, 'dateRange') && listLen(Arguments.DateRange) == 2) {
 			Local.SQL &= "
-				AND 	LastModified < :DateTo
+				AND 	#Local.modifiedColumnName# < :DateTo
 			";
 
 			Local.Params.DateTo = {value = DateAdd('d', 1, DateFormat(ListLast(Arguments.dateRange), 'yyyy-mm-dd'))};
 		}
 
-		Local.fileList = queryExecute(Local.SQL, Local.params , {dbtype="query"});
+		Local.fileList = queryExecute(Local.SQL, Local.params , {dbtype="query", maxrows=Arguments.MaxFiles > 0 ? Arguments.MaxFiles : 9999999});
 
 		return Local.fileList;
 	}
@@ -220,6 +238,7 @@ component singleton accessors="true" {
 			string fileNames
 		,	string dateRange
 		,	boolean removeFromServer = false
+		,	numeric maxFiles = 0
 	) {
 
 		openConnection();
@@ -258,6 +277,7 @@ component singleton accessors="true" {
 	public function processLocalFiles(
 			string fileNames
 		,	string dateRange
+		,	numeric maxFiles = 0
 	) {
 		// Get file query object
 		Local.fileList = filterFileList(
@@ -266,7 +286,8 @@ component singleton accessors="true" {
 		);
 
 		Local.colList = 'Parcel_Number,Log_Type,Event_Date,Event_Time,Event_Location,Event_Description,Consignment_Number,Consignment_Line,Account_Number,Senders_Ref,Checklist_Question_Code,Checklist_Question_Description,Checklist_Response';
-		Local.QueryObject = queryNew(Local.colList);
+		Local.queryObject = queryNew(Local.colList);
+		Local.queryObject.addColumn('Filename');
 
 		Local.conversion = new conversion();
 
@@ -278,10 +299,11 @@ component singleton accessors="true" {
 				// DPD files end with the number of rows, and a blank line. If there's nothing in the log type column, we're at the end of the file.
 				if (isNumeric(Local.thisRow.Log_Type)) {
 					Local.queryObject.addRow(Local.thisRow);
+					Local.queryObject.fileName[Local.queryObject.RecordCount] = Local.thisFile.name;
 				}
 			}
 		}
 
-		return Local.QueryObject;
+		return Local.queryObject;
 	}
 }
