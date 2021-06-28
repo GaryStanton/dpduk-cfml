@@ -12,7 +12,7 @@ component singleton accessors="true" {
 	property name="sftpUsername"    type="string";
 	property name="sftpKeyfile"     type="string";
 	property name="filePath" 		type="string" default="#GetDirectoryFromPath(GetCurrentTemplatePath())#../store/";
-	property name="connectionName"  type="string" default="DPDConneciton_#CreateUUID()#";
+	property name="connectionName"  type="string" default="DPDConnection_#CreateUUID()#";
 	property name="connectionOpen"  type="boolean" default="false";
 
 
